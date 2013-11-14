@@ -1,0 +1,10 @@
+
+Utilisant la bibliothèque Adafruit_PCD8544 pour l'affichage sur un LCD "NOKIA"
+
+Affichage d'un menu depuis l'Arduino sur cet écran
+
+A l'aide de 4 boutons (haut, bas, gauche, droite)
+il est possible de naviguer dans ce menu.
+
+Via le port série de l'Arduino, communication avec le Raspberry PI
+qui éxécutera les commandes demandées par l'utilisateur/Arduino
