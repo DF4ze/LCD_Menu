@@ -30,6 +30,7 @@
 
 
 
+const boolean bDebug = true;
 
 
 // pin 7 - Serial clock out (SCLK)
@@ -83,22 +84,29 @@ void loop() {
 		if( aBtValue[i] ){
 			switch( i ){
 			case BT_LEFT :
-				Serial.println( "Gauche" );
+				if( bDebug )
+					Serial.println( "Gauche" );
+					
 				leave_menu();
 			break;
 			case BT_RIGHT :
-				Serial.println( "Droite" );
+				if( bDebug )
+					Serial.println( "Droite" );
+					
 				enter_menu();
 			break;
 			case BT_UP :
-				Serial.println( "Haut" );
+				if( bDebug )
+					Serial.println( "Haut" );
+					 
 				if( iLigne -1 >= 1 )
 					iLigne--;
 				else
 					iLigne = get_nbitems_menu(iMenu);
 			break;			
 			case BT_DOWN :
-				Serial.println( "Bas" );
+				if( bDebug )
+					Serial.println( "Bas" );
 				
 				if( iLigne +1 <= get_nbitems_menu(iMenu) )
 					iLigne++;
@@ -106,8 +114,10 @@ void loop() {
 					iLigne = 1;
 			break;
 			default:
-				Serial.print( "Touche Inconnue : " );
-				Serial.println( i );
+				if( bDebug ){
+					Serial.print( "Touche Inconnue : " );
+					Serial.println( i );
+				}
 			break;
 			}
 		}
@@ -186,11 +196,12 @@ void menu_gen_corps_dyn( char aItems_Menu[LCD_LINE_MAX][LCD_CHAR_MAX], int iNbIt
 			
 	}
 	
-	Serial.print( "Start : " );
-	Serial.print( iStart );
-	Serial.print( " Stop : " );
-	Serial.println( iStop );
-
+	if( bDebug ){
+		Serial.print( "Start : " );
+		Serial.print( iStart );
+		Serial.print( " Stop : " );
+		Serial.println( iStop );
+	}
 	// Pour chacune des lignes 
 	for( int i=iStart; i < iStop; i++ ){
 		char sLigne[LCD_CHAR_MAX+1];
@@ -226,7 +237,9 @@ void menu_gen_corps_dyn( char aItems_Menu[LCD_LINE_MAX][LCD_CHAR_MAX], int iNbIt
 			// Couleur normale
 			lcd.setTextColor(BLACK); 
 		}
-		Serial.println( sLigne )  ;
+		if( bDebug )
+			Serial.println( sLigne );
+			
 		lcd.print(sLigne);
 	}
 }
@@ -380,7 +393,8 @@ void enter_menu( ){
 		}
 	break;
 	default:
-		Serial.println( "enter_menu : Nous sommes dans un menu inconnu" );
+		if( bDebug )
+			Serial.println( "enter_menu : Nous sommes dans un menu inconnu" );
 	break;
 	}
 }
@@ -398,7 +412,8 @@ void leave_menu( ){
 	default:
 		iMenu = ACCUEIL;
 		iLigne = 1;
-		Serial.println( "leave_menu : Menu par default : ACCUEIL" );
+		if( bDebug )
+			Serial.println( "leave_menu : Menu par default : ACCUEIL" );
 	break;
 	}
 }
