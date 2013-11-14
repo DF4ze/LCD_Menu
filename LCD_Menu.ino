@@ -177,7 +177,7 @@ void menu_gen_titre( char * sTitre, char * sPrez){
  * iNbItems : Le nombre d'items dans ce menu
  * iPos : La ligne du curseur (de 1 à iNbItems)
  */
-void menu_gen_corps_dyn( char aItems_Menu[LCD_LINE_MAX][LCD_CHAR_MAX], int iNbItems, int iPos ){
+void menu_gen_corps_dyn( int iNbItems, int iPos, char ** aItems_Menu ){
 	// S'il y a trop d'items dans ce menu, nous n'affichons que les 4 autour de la selection.
 	int iStart = 0;
 	int iStop = iNbItems;
@@ -206,6 +206,8 @@ void menu_gen_corps_dyn( char aItems_Menu[LCD_LINE_MAX][LCD_CHAR_MAX], int iNbIt
 	// Pour chacune des lignes 
 	for( int i=iStart; i < iStop; i++ ){
 		char sLigne[LCD_CHAR_MAX+1] = {0};
+		// char sLigne[20];
+		int iTailleLigne;
 		int iTaille = strlen( aItems_Menu[i]);
 
 		// sLigne[LCD_CHAR_MAX] = '\0';
@@ -238,9 +240,14 @@ void menu_gen_corps_dyn( char aItems_Menu[LCD_LINE_MAX][LCD_CHAR_MAX], int iNbIt
 			// Couleur normale
 			lcd.setTextColor(BLACK); 
 		}
-		if( bDebug )
+		if( bDebug ){
 			Serial.println( sLigne );
+			// Serial.print( sLigne );
+			// Serial.print( " : " );
+			// iTailleLigne = strlen( sLigne );
+			// Serial.println( iTailleLigne );
 			
+		}
 		lcd.print(sLigne);
 	}
 }
@@ -312,30 +319,25 @@ int get_nbitems_menu( int iNumMenu ){
 void menu_gen_ACCUEIL(){
 	menu_gen_titre( "RaspTools Menu", "" );
 	
-	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Affichage", "Scripts", "Power" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	// char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Affichage", "Scripts", "Power" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	char * aTexts[] = { "Affichage", "Scripts", "Power" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 
 	const int iNbItems = get_nbitems_menu( iMenu );
-	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
 	
 } 
 void menu_gen_AFFICHAGE(){
 	menu_gen_titre( "-=Affichage=- ", "" );
 	
-	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Contrast", "Lumiere" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne	
+	// char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Contrast", "Lumiere" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne	
+	char * aTexts[] = { "Contrast", "Lumiere" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne	
 
 	const int iNbItems = get_nbitems_menu( iMenu );
-	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
 	
 } 
 void menu_gen_CONTRAST(){
 	menu_gen_titre( "-= Contrast =-", "" );
-	
-	char sContrast[3];
-	itoa( iContrast, sContrast, 10);
-	sContrast[2] = '\0';
-	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "", "", "" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
-	strcpy( aTexts[1], sContrast );
-	
 	//////////////
 	// Gestion du contraste
 	if( iLigne == 1 )
@@ -344,27 +346,38 @@ void menu_gen_CONTRAST(){
 		iContrast -= 2;
 	lcd.setContrast( iContrast );
 	
+	char sContrast[3];
+	itoa( iContrast, sContrast, 10);
+	sContrast[2] = '\0';
+	
+	// char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "", "", "" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	char * aTexts[] = { "", sContrast, "" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	// strcpy( aTexts[1], sContrast );
+	
+	
 	iLigne = 2;
 	const int iNbItems = get_nbitems_menu( iMenu );
-	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
 	
 } 
 void menu_gen_LUMIERE(){
 	menu_gen_titre( "-= Lumiere =- ", "              " );
 	
-	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "ON", "OFF" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	// char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "ON", "OFF" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	char * aTexts[] = { "ON", "OFF" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 
 	const int iNbItems = get_nbitems_menu( iMenu );
-	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
 	
 } 
 void menu_gen_POWER(){
 	menu_gen_titre( "-=  POWER  =- ", "" );
 	
-	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Halt PI", "Reboot PI", "Halt Ard.", "Start Scr.", "Stop Scr." }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	// char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Halt PI", "Reboot PI", "Halt Ard.", "Start Scr.", "Stop Scr." }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	char *aTexts[] = { "Halt PI", "Reboot PI", "Halt Ard.", "Start Scr.", "Stop Scr." }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 
 	const int iNbItems = get_nbitems_menu( iMenu );
-	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
 } 
 
 /* Action a suivre lorsqu'on appuis sur le bouton de droite.
@@ -395,7 +408,7 @@ void enter_menu( ){
 		switch( iLigne ){
 		case 1 :
 			iMenu = CONTRAST;
-			iLigne = 1;
+			iLigne = 2;
 		break;
 		case 2 :
 			iMenu = LUMIERE;
