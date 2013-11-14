@@ -24,7 +24,9 @@
 //////////////////////////////////////////
 // Les Menus  * Doit être rempli à la main à chaque insertion d'un nouveau menu
 #define ACCUEIL		1
-#define CONTRAST	2
+#define AFFICHAGE	2
+#define CONTRAST	3
+#define LUMIERE		4
 
 
 
@@ -247,8 +249,14 @@ void menu_display( int iNumMenu ){
 	case ACCUEIL :
 		menu_gen_ACCUEIL();
 	break;
+	case AFFICHAGE :
+		menu_gen_AFFICHAGE();
+	break;
 	case CONTRAST :
 		menu_gen_CONTRAST();
+	break;
+	case LUMIERE :
+		menu_gen_LUMIERE();
 	break;
 	default :
 		menu_gen_ACCUEIL();
@@ -263,10 +271,16 @@ void menu_display( int iNumMenu ){
 int get_nbitems_menu( int iNumMenu ){
 	switch( iNumMenu ){
 	case ACCUEIL :
-		return 7;
+		return 3;
+	break;
+	case AFFICHAGE :
+		return 2;
 	break;
 	case CONTRAST :
 		return 3;
+	break;
+	case LUMIERE :
+		return 2;
 	break;
 	default :
 		return 0;
@@ -278,14 +292,23 @@ int get_nbitems_menu( int iNumMenu ){
 void menu_gen_ACCUEIL(){
 	menu_gen_titre( "RaspTools Menu", "" );
 	
-	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Contrast", "Lumiere", "Shutdown", "Shutdown2", "Shutdown3", "Shutdown4", "Shutdown5" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Affichage", "Scripts", "Power" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 
 	const int iNbItems = get_nbitems_menu( ACCUEIL );
 	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
 	
 } 
+void menu_gen_AFFICHAGE(){
+	menu_gen_titre( "-=Affichage=- ", "" );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Contrast", "Lumiere" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne	
+
+	const int iNbItems = get_nbitems_menu( LUMIERE );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
 void menu_gen_CONTRAST(){
-	menu_gen_titre( "-= Contrast =-", "              " );
+	menu_gen_titre( "-= Contrast =-", "" );
 	
 	char sContrast[3];
 	itoa( iContrast, sContrast, 10);
@@ -306,6 +329,15 @@ void menu_gen_CONTRAST(){
 	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
 	
 } 
+void menu_gen_LUMIERE(){
+	menu_gen_titre( "-= Lumiere =- ", "              " );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "ON", "OFF" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+
+	const int iNbItems = get_nbitems_menu( LUMIERE );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
 
 /* Action a suivre lorsqu'on appuis sur le bouton de droite.
  * se sert de la variable globale iMenu
@@ -315,13 +347,40 @@ void enter_menu( ){
 	case ACCUEIL :
 		switch( iLigne ){
 		case 1 :
+			iMenu = AFFICHAGE;
+			iLigne = 1;
+		break;
+		case 2 :
+			// iMenu = SCRIPTS;
+			// iLigne = 1;
+			;
+		break;
+		case 3 :
+			// iMenu = POWER;
+			// iLigne = 1;
+			;
+		break;
+		default:
+		break;
+		}
+	break;
+	case AFFICHAGE :
+		switch( iLigne ){
+		case 1 :
 			iMenu = CONTRAST;
 			iLigne = 1;
+		break;
+		case 2 :
+			iMenu = LUMIERE;
+			iLigne = 1;
+			;
+		break;
+		default:
 		break;
 		}
 	break;
 	default:
-		Serial.println( "Menu inconnu" );
+		Serial.println( "enter_menu : Nous sommes dans un menu inconnu" );
 	break;
 	}
 }
@@ -331,13 +390,15 @@ void enter_menu( ){
  */
 void leave_menu( ){
 	switch( iMenu ){
-	case ACCUEIL :
 	case CONTRAST :
-		iMenu = ACCUEIL;
-		iLigne = 1;
+	case LUMIERE :
+		iMenu = AFFICHAGE;
+		iLigne = 1;	
 	break;
 	default:
-		Serial.println( "Menu inconnu" );
+		iMenu = ACCUEIL;
+		iLigne = 1;
+		Serial.println( "leave_menu : Menu par default : ACCUEIL" );
 	break;
 	}
 }
