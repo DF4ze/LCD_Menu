@@ -1,6 +1,6 @@
-
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
+
 
 //////////////////////////////////////////
 // Les Boutons
@@ -25,8 +25,19 @@
 // Les Menus  * Doit être rempli à la main à chaque insertion d'un nouveau menu
 #define ACCUEIL		1
 #define CONTRAST	2
+#define LUMIERE		3
+#define POWER		4
+#define AFFICHAGE	5
+#define IP			6
+#define SCRIPTS		7
+#define WIFI		8
+#define BLUETOOTH	9
+#define BUREAU		10
+#define SRVWEB		11
+#define RASPBUGGY	12
 
 
+#define DEBUG		0 // Mode debug?
 
 
 
@@ -81,22 +92,29 @@ void loop() {
 		if( aBtValue[i] ){
 			switch( i ){
 			case BT_LEFT :
-				Serial.println( "Gauche" );
+				if( DEBUG )
+					Serial.println( "Gauche" );
+					
 				leave_menu();
 			break;
 			case BT_RIGHT :
-				Serial.println( "Droite" );
+				if( DEBUG )
+					Serial.println( "Droite" );
+					
 				enter_menu();
 			break;
 			case BT_UP :
-				Serial.println( "Haut" );
+				if( DEBUG )
+					Serial.println( "Haut" );
+					
 				if( iLigne -1 >= 1 )
 					iLigne--;
 				else
 					iLigne = get_nbitems_menu(iMenu);
 			break;			
 			case BT_DOWN :
-				Serial.println( "Bas" );
+				if( DEBUG )
+					Serial.println( "Bas" );
 				
 				if( iLigne +1 <= get_nbitems_menu(iMenu) )
 					iLigne++;
@@ -104,8 +122,10 @@ void loop() {
 					iLigne = 1;
 			break;
 			default:
-				Serial.print( "Touche Inconnue : " );
-				Serial.println( i );
+				if( DEBUG ){
+					Serial.print( "Touche Inconnue : " );
+					Serial.println( i );
+				}
 			break;
 			}
 		}
@@ -165,6 +185,7 @@ void menu_gen_titre( char * sTitre, char * sPrez){
  * iPos : La ligne du curseur (de 1 à iNbItems)
  */
 void menu_gen_corps_dyn( char aItems_Menu[LCD_LINE_MAX][LCD_CHAR_MAX], int iNbItems, int iPos ){
+// void menu_gen_corps_dyn( char ** aItems_Menu, int iNbItems, int iPos ){
 	// S'il y a trop d'items dans ce menu, nous n'affichons que les 4 autour de la selection.
 	int iStart = 0;
 	int iStop = iNbItems;
@@ -184,11 +205,12 @@ void menu_gen_corps_dyn( char aItems_Menu[LCD_LINE_MAX][LCD_CHAR_MAX], int iNbIt
 			
 	}
 	
-	Serial.print( "Start : " );
-	Serial.print( iStart );
-	Serial.print( " Stop : " );
-	Serial.println( iStop );
-
+	if( DEBUG ){
+		Serial.print( "Start : " );
+		Serial.print( iStart );
+		Serial.print( " Stop : " );
+		Serial.println( iStop );
+	}
 	// Pour chacune des lignes 
 	for( int i=iStart; i < iStop; i++ ){
 		char sLigne[LCD_CHAR_MAX+1];
@@ -209,7 +231,8 @@ void menu_gen_corps_dyn( char aItems_Menu[LCD_LINE_MAX][LCD_CHAR_MAX], int iNbIt
 			// On inverse la couleur de cette ligne
 			lcd.setTextColor(WHITE, BLACK); 
 
-		}else{
+		}
+		else{
 			if( strcmp( aItems_Menu[i], "" ) == 0 )
 				strcpy( sLigne, " " );
 			else // On ajoute le symbole de debut
@@ -224,7 +247,10 @@ void menu_gen_corps_dyn( char aItems_Menu[LCD_LINE_MAX][LCD_CHAR_MAX], int iNbIt
 			// Couleur normale
 			lcd.setTextColor(BLACK); 
 		}
-		Serial.println( sLigne )  ;
+		
+		if( DEBUG )	
+			Serial.println( sLigne )  ;
+			
 		lcd.print(sLigne);
 	}
 }
@@ -247,8 +273,35 @@ void menu_display( int iNumMenu ){
 	case ACCUEIL :
 		menu_gen_ACCUEIL();
 	break;
+	case AFFICHAGE :
+		menu_gen_AFFICHAGE();
+	break;
 	case CONTRAST :
 		menu_gen_CONTRAST();
+	break;
+	case LUMIERE :
+		menu_gen_LUMIERE();
+	break;
+	case POWER :
+		menu_gen_POWER();
+	break;
+	case SCRIPTS :
+		menu_gen_SCRIPTS();
+	break;
+	case WIFI :
+		menu_gen_WIFI();
+	break;
+	case BLUETOOTH :
+		menu_gen_BLUETOOTH();
+	break;
+	case BUREAU :
+		menu_gen_BUREAU();
+	break;
+	case SRVWEB :
+		menu_gen_SRVWEB();
+	break;
+	case RASPBUGGY :
+		menu_gen_RASPBUGGY();
 	break;
 	default :
 		menu_gen_ACCUEIL();
@@ -263,10 +316,37 @@ void menu_display( int iNumMenu ){
 int get_nbitems_menu( int iNumMenu ){
 	switch( iNumMenu ){
 	case ACCUEIL :
-		return 7;
+		return 4;
+	break;
+	case AFFICHAGE :
+		return 2;
 	break;
 	case CONTRAST :
 		return 3;
+	break;
+	case LUMIERE :
+		return 2;
+	break;
+	case POWER :
+		return 5;
+	break;
+	case SCRIPTS :
+		return 5;
+	break;
+	case WIFI :
+		return 3;
+	break;
+	case BLUETOOTH :
+		return 2;
+	break;
+	case BUREAU :
+		return 4;
+	break;
+	case SRVWEB :
+		return 2;
+	break;
+	case RASPBUGGY :
+		return 2;
 	break;
 	default :
 		return 0;
@@ -278,18 +358,28 @@ int get_nbitems_menu( int iNumMenu ){
 void menu_gen_ACCUEIL(){
 	menu_gen_titre( "RaspTools Menu", "" );
 	
-	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Contrast", "Lumiere", "Shutdown", "Shutdown2", "Shutdown3", "Shutdown4", "Shutdown5" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Affichage", "IP", "Scripts", "Powers" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 
-	const int iNbItems = get_nbitems_menu( ACCUEIL );
+	const int iNbItems = get_nbitems_menu( iMenu /* ACCUEIL */ );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
+void menu_gen_AFFICHAGE(){
+	menu_gen_titre( "-=Affichage=- ", "" );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Contrast", "Lumiere"}; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+
+	const int iNbItems = get_nbitems_menu( iMenu /* ACCUEIL */ );
 	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
 	
 } 
 void menu_gen_CONTRAST(){
-	menu_gen_titre( "-= Contrast =-", "              " );
+	menu_gen_titre( "-= Contrast =-", "" );
 	
-	char sContrast[3];
+	char sContrast[4];
 	itoa( iContrast, sContrast, 10);
-	sContrast[2] = '\0';
+	sContrast[3] = '\0';
+	// 3 items, iLigne sera toujours sur 2, mais on saura si on a monté ou déscendu grace aux 2 items autour.
 	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "", "", "" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 	strcpy( aTexts[1], sContrast );
 	
@@ -302,7 +392,79 @@ void menu_gen_CONTRAST(){
 	lcd.setContrast( iContrast );
 	
 	iLigne = 2;
-	const int iNbItems = get_nbitems_menu( CONTRAST );
+	const int iNbItems = get_nbitems_menu( iMenu /* CONTRAST */ );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
+void menu_gen_LUMIERE(){
+	menu_gen_titre( "-= Lumiere =- ", "              " );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "ON", "OFF" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu /* LUMIERE */ );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
+void menu_gen_POWER(){
+	menu_gen_titre( "-=  Power  =- ", "" );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Halt PI", "Reboot PI", "Halt Arduino", "Start Screen", "Stop Screen" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu /* POWER */ );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
+void menu_gen_SCRIPTS(){
+	menu_gen_titre( "-= Scripts =- ", "" );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Bureau", "Web Server", "RaspBuggy", "WIFI", "BlueTooth" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
+void menu_gen_WIFI(){
+	menu_gen_titre( "-=   WIFI   =-", "" );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Scan", "Crack", "Connect" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
+void menu_gen_BLUETOOTH(){
+	menu_gen_titre( "-=BlueTooth=- ", "" );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Scan", "Connect" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
+void menu_gen_BUREAU(){
+	menu_gen_titre( "-=  Bureau  =-", "" );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Start X", "Stop X", "Start PMAD", "Stop PMAD" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu  );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
+void menu_gen_SRVWEB(){
+	menu_gen_titre( "-=Web Server=-", "" );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Start Server", "Stop Server" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu );
+	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
+	
+} 
+void menu_gen_RASPBUGGY(){
+	menu_gen_titre( "-=RaspBuggy=- ", "" );
+	
+	char aTexts[LCD_LINE_MAX][LCD_CHAR_MAX] = { "Mode Control", "Mode Auto" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu );
 	menu_gen_corps_dyn( aTexts, iNbItems, iLigne );
 	
 } 
@@ -315,13 +477,159 @@ void enter_menu( ){
 	case ACCUEIL :
 		switch( iLigne ){
 		case 1 :
+			iMenu = AFFICHAGE;
+			iLigne = 1;
+		break;
+		case 2 :
+			iMenu = IP;
+			iLigne = 1;
+		break;
+		case 3 :
+			iMenu = SCRIPTS;
+			iLigne = 1;
+		break;
+		case 4 :
+			iMenu = POWER;
+			iLigne = 1;
+		break;
+		default: 
+		break;
+		}
+	break;
+	case AFFICHAGE :
+		if( iLigne == 1 ){
 			iMenu = CONTRAST;
 			iLigne = 1;
+		}else{
+			iMenu = LUMIERE;
+			iLigne = 1;
+		}
+	break;	
+	case LUMIERE :
+		if( iLigne == 1 )
+			; // ON
+		else
+			; // OFF
+	break;
+	case POWER : 
+		switch( iLigne ){
+		case 1 :
+			Serial.println( "shutdown -h now" ); // Halt
+		break;
+		case 2 :
+			Serial.println( "shutdown -r now" ); // Reboot
+		break;
+		case 3 :
+			Serial.println( "/chemin/gpio write PIN_ARDUINO 0" ); // Halt Arduino
+		break;
+		case 4 :
+			Serial.println( "/chemin/gpio write PIN_SCREEN 1" ); // Start Screen
+		break;
+		case 5 :
+			Serial.println( "/chemin/gpio write PIN_SCREEN 0" ); // Stop Screen
+		break;
+		default:
+		break;
+		}
+	break;
+	case SCRIPTS :
+		switch( iLigne ){
+		case 1 :
+			iMenu = BUREAU;
+			iLigne = 1;
+		break;
+		case 2 :
+			iMenu = SRVWEB;
+			iLigne = 1;
+		break;
+		case 3 :
+			iMenu = RASPBUGGY;
+			iLigne = 1;
+		break;
+		case 4 :
+			iMenu = WIFI;
+			iLigne = 1;
+		break;
+		case 5 :
+			iMenu = BLUETOOTH;
+			iLigne = 1;
+		break;
+		default:
+		break;
+		}
+	break;
+	case BUREAU :
+		switch( iLigne ){
+		case 1 :
+			// Start X
+		break;
+		case 2 :
+			// Stop X
+		break;
+		case 3 :
+			// Start PMAD
+		break;
+		case 4 :
+			// Stop PMAD
+		break;
+		default:
+		break;
+		}
+	break;
+	case SRVWEB :
+		switch( iLigne ){
+		case 1 :
+			// Start Srv
+		break;
+		case 2 :
+			// Stop Srv
+		break;
+		default:
+		break;
+		}
+	break;
+	case RASPBUGGY :
+		switch( iLigne ){
+		case 1 :
+			// Mode Control
+		break;
+		case 2 :
+			// Mode Auto
+		break;
+		default:
+		break;
+		}
+	break;
+	case WIFI :
+		switch( iLigne ){
+		case 1 :
+			// Scan
+		break;
+		case 2 :
+			// Crack
+		break;
+		case 3 :
+			// Connect
+		break;
+		default:
+		break;
+		}
+	break;
+	case BLUETOOTH :
+		switch( iLigne ){
+		case 1 :
+			// Scan
+		break;
+		case 2 :
+			// Connect
+		break;
+		default:
 		break;
 		}
 	break;
 	default:
-		Serial.println( "Menu inconnu" );
+		if( DEBUG )
+			Serial.println( "Menu inconnu" );
 	break;
 	}
 }
@@ -331,13 +639,26 @@ void enter_menu( ){
  */
 void leave_menu( ){
 	switch( iMenu ){
-	case ACCUEIL :
+/* 	case ACCUEIL : 	// --> pas necessaire de déclarer tout les menus...! par defaut : on retourne sur l'accueil.
+					// Seul inconvénient ... on revient tjs sur la 1ere ligne ... alors qu'on avait selectionné la 2eme, 3eme....*/
 	case CONTRAST :
-		iMenu = ACCUEIL;
+	case LUMIERE :
+		iMenu = AFFICHAGE;
+		iLigne = 1;
+	break;
+	case BUREAU :
+	case SRVWEB :
+	case RASPBUGGY :
+	case WIFI :
+	case BLUETOOTH :
+		iMenu = SCRIPTS;
 		iLigne = 1;
 	break;
 	default:
-		Serial.println( "Menu inconnu" );
+		iMenu = ACCUEIL;
+		iLigne = 1;
+		if( DEBUG )
+			Serial.println( "Menu inconnu" );
 	break;
 	}
 }
