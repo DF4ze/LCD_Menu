@@ -37,7 +37,7 @@
 #define RASPBUGGY	12
 
 
-#define DEBUG		1 // Mode debug?
+#define DEBUG		0 // Mode debug?
 
 
 
@@ -413,64 +413,58 @@ void menu_gen_POWER(){
 	
 } 
 void menu_gen_SCRIPTS(){
-/* 	menu_gen_titre( "-= Scripts =- ", "" );
+ 	menu_gen_titre( "-= Scripts =- ", "" );
 	
 	char * aTexts[] = { "Bureau", "Web Server", "RaspBuggy", "WIFI", "BlueTooth" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 	
 	const int iNbItems = get_nbitems_menu( iMenu );
 	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
- */	
- ;
+
 } 
 void menu_gen_WIFI(){
-/* 	menu_gen_titre( "-=   WIFI   =-", "" );
+ 	menu_gen_titre( "-=   WIFI   =-", "" );
 	
 	char * aTexts[] = { "Scan", "Crack", "Connect" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 	
 	const int iNbItems = get_nbitems_menu( iMenu );
 	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
- */	
- ;
+
 } 
 void menu_gen_BLUETOOTH(){
-/* 	menu_gen_titre( "-=BlueTooth=- ", "" );
+ 	menu_gen_titre( "-=BlueTooth=- ", "" );
 	
 	char * aTexts[] = { "Scan", "Connect" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 	
 	const int iNbItems = get_nbitems_menu( iMenu );
 	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
- */	
- ;
+
 } 
 void menu_gen_BUREAU(){
-/* 	menu_gen_titre( "-=  Bureau  =-", "" );
+ 	menu_gen_titre( "-=  Bureau  =-", "" );
 	
 	char * aTexts[] = { "Start X", "Stop X", "Start PMAD", "Stop PMAD" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 	
 	const int iNbItems = get_nbitems_menu( iMenu  );
 	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
- */	
- ;
+
 } 
 void menu_gen_SRVWEB(){
-/* 	menu_gen_titre( "-=Web Server=-", "" );
+ 	menu_gen_titre( "-=Web Server=-", "" );
 	
 	char * aTexts[] = { "Start Server", "Stop Server" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 	
 	const int iNbItems = get_nbitems_menu( iMenu );
 	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
- */	
- ;
+
 } 
 void menu_gen_RASPBUGGY(){
-/* 	menu_gen_titre( "-=RaspBuggy=- ", "" );
+ 	menu_gen_titre( "-=RaspBuggy=- ", "" );
 	
 	char * aTexts[] = { "Mode Control", "Mode Auto" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 	
 	const int iNbItems = get_nbitems_menu( iMenu );
 	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
- */	;
- 
+
 } 
 
 /* Action a suivre lorsqu'on appuis sur le bouton de droite.
@@ -503,7 +497,7 @@ void enter_menu( ){
 	case AFFICHAGE :
 		if( iLigne == 1 ){
 			iMenu = CONTRAST;
-			iLigne = 1;
+			iLigne = 2;
 		}else{
 			iMenu = LUMIERE;
 			iLigne = 1;
@@ -536,7 +530,7 @@ void enter_menu( ){
 		break;
 		}
 	break;
-/* 	case SCRIPTS :
+ 	case SCRIPTS :
 		switch( iLigne ){
 		case 1 :
 			iMenu = BUREAU;
@@ -565,16 +559,16 @@ void enter_menu( ){
 	case BUREAU :
 		switch( iLigne ){
 		case 1 :
-			// Start X
+			Serial.println( "startx" );// Start X
 		break;
 		case 2 :
-			// Stop X
+			Serial.println( "stopx" );// Stop X
 		break;
 		case 3 :
-			// Start PMAD
+			Serial.println( "startPMAD" );// Start PMAD
 		break;
 		case 4 :
-			// Stop PMAD
+			Serial.println( "stopPMAD" );// Stop PMAD
 		break;
 		default:
 		break;
@@ -583,10 +577,10 @@ void enter_menu( ){
 	case SRVWEB :
 		switch( iLigne ){
 		case 1 :
-			// Start Srv
+			Serial.println( "startwebserver" );// Start Srv
 		break;
 		case 2 :
-			// Stop Srv
+			Serial.println( "stopwebserver" );// Stop Srv
 		break;
 		default:
 		break;
@@ -595,10 +589,10 @@ void enter_menu( ){
 	case RASPBUGGY :
 		switch( iLigne ){
 		case 1 :
-			// Mode Control
+			Serial.println( "startRaspbuggyControl" );// Mode Control
 		break;
 		case 2 :
-			// Mode Auto
+			Serial.println( "startRaspbuggyAuto" );// Mode Auto
 		break;
 		default:
 		break;
@@ -607,13 +601,13 @@ void enter_menu( ){
 	case WIFI :
 		switch( iLigne ){
 		case 1 :
-			// Scan
+			Serial.println( "WifiScan" );// Scan
 		break;
 		case 2 :
-			// Crack
+			Serial.println( "WifiCrack" );// Crack
 		break;
 		case 3 :
-			// Connect
+			Serial.println( "WifiConnect" );// Connect
 		break;
 		default:
 		break;
@@ -622,15 +616,15 @@ void enter_menu( ){
 	case BLUETOOTH :
 		switch( iLigne ){
 		case 1 :
-			// Scan
+			Serial.println( "BT Scan" );// Scan
 		break;
 		case 2 :
-			// Connect
+			Serial.println( "BT Connect" );// Connect
 		break;
 		default:
 		break;
 		}
-	break; */
+	break;
 	default:
 		if( DEBUG )
 			Serial.println( "Menu inconnu" );
@@ -650,14 +644,14 @@ void leave_menu( ){
 		iMenu = AFFICHAGE;
 		iLigne = 1;
 	break;
-/* 	case BUREAU :
+ 	case BUREAU :
 	case SRVWEB :
 	case RASPBUGGY :
 	case WIFI :
 	case BLUETOOTH :
 		iMenu = SCRIPTS;
 		iLigne = 1;
-	break; */
+	break; 
 	default:
 		iMenu = ACCUEIL;
 		iLigne = 1;
