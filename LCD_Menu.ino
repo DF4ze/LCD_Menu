@@ -7,8 +7,8 @@
 #define BT_MAX		4 // Nb de boutons
 #define BT_TIME		500	// Temps en ms entre 2 check de boutons
 // Un nom pr les reconnaitres
-#define BT_LEFT 	0
-#define BT_RIGHT	2
+#define BT_LEFT 	2
+#define BT_RIGHT	0
 #define BT_UP		3
 #define BT_DOWN		1
 // #define BT_ALIM		12 // N° PIN
@@ -35,11 +35,12 @@
 #define BUREAU		10
 #define SRVWEB		11
 #define RASPBUGGY	12
+#define TESTS		13
 
-
-
-#define DEBUG		0 // Mode debug?
-
+//////////////////////////////////////////
+// Divers
+#define DEBUG		1 // Mode debug?
+#define SERIAL_MAX	4095 // Nb de char maximum qui vont transiter par le Serial
 
 
 // pin 7 - Serial clock out (SCLK)
@@ -58,11 +59,20 @@ int aBtPin[BT_MAX] = { 0, 1, 2, 3 }; 	// Tableau contenant les PIN(analogiques) 
 boolean aBtValue[BT_MAX];					// Tableau contenant les valeurs des  boutons
 
 
+//// Port Série
+// Détient la chaine de caractère qui est réceptionnée
+// String inputString = "";
+String inputString = "";
+char sSerialString[SERIAL_MAX] = {0};
+// Indicateur de fin de commande.
+boolean stringComplete = false;
+
+
 
 void setup(){
 	/////////////////////////
 	// Init Serial
-	Serial.begin(9600);
+	Serial.begin(115200);
 
 	//////////////////////
 	// Init LCD
@@ -94,19 +104,19 @@ void loop() {
 			switch( i ){
 			case BT_LEFT :
 				if( DEBUG )
-					Serial.println( "Gauche" );
+					Serial.println( "#Gauche" );
 					
 				leave_menu();
 			break;
 			case BT_RIGHT :
 				if( DEBUG )
-					Serial.println( "Droite" );
+					Serial.println( "#Droite" );
 					
 				enter_menu();
 			break;
 			case BT_UP :
 				if( DEBUG )
-					Serial.println( "Haut" );
+					Serial.println( "#Haut" );
 					
 				if( iLigne -1 >= 1 )
 					iLigne--;
@@ -115,7 +125,7 @@ void loop() {
 			break;			
 			case BT_DOWN :
 				if( DEBUG )
-					Serial.println( "Bas" );
+					Serial.println( "#Bas" );
 				
 				if( iLigne +1 <= get_nbitems_menu(iMenu) )
 					iLigne++;
@@ -124,7 +134,7 @@ void loop() {
 			break;
 			default:
 				if( DEBUG ){
-					Serial.print( "Touche Inconnue : " );
+					Serial.print( "#Touche Inconnue : " );
 					Serial.println( i );
 				}
 			break;
@@ -136,7 +146,26 @@ void loop() {
 }
 
 
+////////////////////////
+// Serial
 
+// Fonction de réception des données sur le port série 
+void serialEvent() {
+  // Tant que nous avons des données à réceptionner
+  while( Serial.available() ){
+    // Récupère un nouvel Octet:
+    char inChar = Serial.read();
+    
+    // Si le caractère réceptionné est *
+    // La boucle principale va pouvoir s'occuper du résultat.
+    if( inChar == '\n' ){
+		stringComplete = true;
+	  
+    }else
+       // Sinon, on concatène l'octet à "inputString"
+       inputString += inChar;
+ }
+}
 
 
 ////////////////////////
@@ -205,7 +234,7 @@ void menu_gen_corps_dyn( int iNbItems, int iPos ,char ** aItems_Menu ){
 			
 	}
 	if( DEBUG ){
-		Serial.print( "Start : " );
+		Serial.print( "#Start : " );
 		Serial.print( iStart );
 		Serial.print( " Stop : " );
 		Serial.println( iStop );
@@ -303,6 +332,12 @@ void menu_display( int iNumMenu ){
 	case RASPBUGGY :
 		menu_gen_RASPBUGGY();
 	break;
+	case TESTS :
+		menu_gen_TESTS();
+	break;
+	case IP :
+		menu_gen_IP();
+	break;
 	default :
 		menu_gen_ACCUEIL();
 	break;
@@ -316,7 +351,7 @@ void menu_display( int iNumMenu ){
 int get_nbitems_menu( int iNumMenu ){
 	switch( iNumMenu ){
 	case ACCUEIL :
-		return 4;
+		return 5;
 	break;
 	case AFFICHAGE :
 		return 2;
@@ -348,6 +383,13 @@ int get_nbitems_menu( int iNumMenu ){
 	case RASPBUGGY :
 		return 2;
 	break;
+	case TESTS :
+		return 2;
+	break;
+	case IP :
+		return 1;
+	break;
+	
 	default :
 		return 0;
 	break;
@@ -358,7 +400,7 @@ int get_nbitems_menu( int iNumMenu ){
 void menu_gen_ACCUEIL(){
 	menu_gen_titre( "RaspTools Menu", "" );
 	
-	char * aTexts[] = { "Affichage", "IP", "Scripts", "Powers" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	char * aTexts[] = { "Affichage", "IP", "Scripts", "Powers", "Tests" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
 
 	const int iNbItems = get_nbitems_menu( iMenu );
 	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
@@ -373,7 +415,6 @@ void menu_gen_AFFICHAGE(){
 	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
 	
 } 
-
 void menu_gen_CONTRAST(){
 	menu_gen_titre( "-= Contrast =-", "" );
 	//////////////
@@ -466,6 +507,47 @@ void menu_gen_RASPBUGGY(){
 	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
 
 } 
+void menu_gen_TESTS(){
+ 	menu_gen_titre( "-=   Test   =-", "" );
+	
+	char * aTexts[] = { "ls", "IP" }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu );
+	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
+
+} 
+void menu_gen_IP( ){
+	// On demande l'IP
+	// Serial.println( "sh /my_scripts/get_ip.sh" );
+	Serial.println( "/sbin/ifconfig eth0 | awk '/inet / {print $2}' | cut -d ':' -f2" );
+	// Serial.println( "" );
+	// On attend la réponse
+	while( !stringComplete ){
+		serialEvent();
+	}
+	// et on demande le menu IP
+
+	Serial.print( "#inputString : " );
+	Serial.println( inputString );
+	
+ 	menu_gen_titre( "-=    IP    =-", "              " );
+	
+	// Convertion du String en Char *
+	char *cstr = new char[inputString.length() + 1];
+	strcpy(cstr, inputString.c_str());
+			
+	Serial.print( "#inputString (char*): " );
+	Serial.println( cstr );
+	char * aTexts[] = { cstr }; //!\\ Les textes doivent etre < LCD_CHAR_MAX --> (13) pour laisse la place au symbole de ligne
+	
+	const int iNbItems = get_nbitems_menu( iMenu );
+	menu_gen_corps_dyn( iNbItems, iLigne, aTexts );
+
+	// Nettoyage ;)
+	delete [] cstr;
+	inputString = "";
+} 
+
 
 /* Action a suivre lorsqu'on appuis sur le bouton de droite.
  * se sert de la variable globale iMenu
@@ -479,8 +561,9 @@ void enter_menu( ){
 			iLigne = 1;
 		break;
 		case 2 :
-			iMenu = IP;
+
 			iLigne = 1;
+			iMenu = IP;
 		break;
 		case 3 :
 			iMenu = SCRIPTS;
@@ -490,6 +573,11 @@ void enter_menu( ){
 			iMenu = POWER;
 			iLigne = 1;
 		break;
+		case 5 :
+			iMenu = TESTS;
+			iLigne = 1;
+		break;
+		
 		default: 
 		break;
 		}
@@ -512,19 +600,19 @@ void enter_menu( ){
 	case POWER : 
 		switch( iLigne ){
 		case 1 :
-			Serial.println( "shutdown -h now" ); // Halt
+			Serial.print( "shutdown -h now" ); // Halt
 		break;
 		case 2 :
-			Serial.println( "shutdown -r now" ); // Reboot
+			Serial.print( "shutdown -r now" ); // Reboot
 		break;
 		case 3 :
-			Serial.println( "/chemin/gpio write PIN_ARDUINO 0" ); // Halt Arduino
+			Serial.print( "/chemin/gpio write PIN_ARDUINO 0" ); // Halt Arduino
 		break;
 		case 4 :
-			Serial.println( "/chemin/gpio write PIN_SCREEN 1" ); // Start Screen
+			Serial.print( "/chemin/gpio write PIN_SCREEN 1" ); // Start Screen
 		break;
 		case 5 :
-			Serial.println( "/chemin/gpio write PIN_SCREEN 0" ); // Stop Screen
+			Serial.print( "/chemin/gpio write PIN_SCREEN 0" ); // Stop Screen
 		break;
 		default:
 		break;
@@ -559,16 +647,16 @@ void enter_menu( ){
 	case BUREAU :
 		switch( iLigne ){
 		case 1 :
-			Serial.println( "startx" );// Start X
+			Serial.print( "startx" );// Start X
 		break;
 		case 2 :
-			Serial.println( "stopx" );// Stop X
+			Serial.print( "stopx" );// Stop X
 		break;
 		case 3 :
-			Serial.println( "startPMAD" );// Start PMAD
+			Serial.print( "startPMAD" );// Start PMAD
 		break;
 		case 4 :
-			Serial.println( "stopPMAD" );// Stop PMAD
+			Serial.print( "stopPMAD" );// Stop PMAD
 		break;
 		default:
 		break;
@@ -577,10 +665,10 @@ void enter_menu( ){
 	case SRVWEB :
 		switch( iLigne ){
 		case 1 :
-			Serial.println( "startwebserver" );// Start Srv
+			Serial.print( "startwebserver" );// Start Srv
 		break;
 		case 2 :
-			Serial.println( "stopwebserver" );// Stop Srv
+			Serial.print( "stopwebserver" );// Stop Srv
 		break;
 		default:
 		break;
@@ -589,10 +677,10 @@ void enter_menu( ){
 	case RASPBUGGY :
 		switch( iLigne ){
 		case 1 :
-			Serial.println( "startRaspbuggyControl" );// Mode Control
+			Serial.print( "startRaspbuggyControl" );// Mode Control
 		break;
 		case 2 :
-			Serial.println( "startRaspbuggyAuto" );// Mode Auto
+			Serial.print( "startRaspbuggyAuto" );// Mode Auto
 		break;
 		default:
 		break;
@@ -601,13 +689,13 @@ void enter_menu( ){
 	case WIFI :
 		switch( iLigne ){
 		case 1 :
-			Serial.println( "WifiScan" );// Scan
+			Serial.print( "WifiScan" );// Scan
 		break;
 		case 2 :
-			Serial.println( "WifiCrack" );// Crack
+			Serial.print( "WifiCrack" );// Crack
 		break;
 		case 3 :
-			Serial.println( "WifiConnect" );// Connect
+			Serial.print( "WifiConnect" );// Connect
 		break;
 		default:
 		break;
@@ -616,18 +704,33 @@ void enter_menu( ){
 	case BLUETOOTH :
 		switch( iLigne ){
 		case 1 :
-			Serial.println( "BT Scan" );// Scan
+			Serial.print( "BT Scan" );// Scan
 		break;
 		case 2 :
-			Serial.println( "BT Connect" );// Connect
+			Serial.print( "BT Connect" );// Connect
 		break;
 		default:
 		break;
 		}
 	break;
+	case TESTS :
+		switch( iLigne ){
+		case 1 :
+			Serial.print( "ls -l" );
+		break;
+		case 2 :
+			iLigne = 1;
+			iMenu = IP;
+		break;
+		
+		default:
+		break;
+		}
+		
+	break;
 	default:
 		if( DEBUG )
-			Serial.println( "enter_menu : Nous sommes dans un menu inconnu" );
+			Serial.print( "#enter_menu : Nous sommes dans un menu inconnu" );
 	break;
 	}
 }
@@ -654,7 +757,7 @@ void leave_menu( ){
 		iMenu = ACCUEIL;
 		iLigne = 1;
 		if( DEBUG )
-			Serial.println( "leave_menu : Menu par default : ACCUEIL" );
+			Serial.println( "#leave_menu : Menu par default : ACCUEIL" );
 	break;
 	}
 }
